@@ -24,31 +24,33 @@ export default function Formulario() {
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
 
-  // Función para validar el nombre del producto
   const validateName = (text: string) => {
     const regex = /^(?!.*\.\.)(?!.*\s{2,})[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/;
     return regex.test(text.trim()) && text.trim().length > 0;
   };
 
-  // Función para validar los precios
+
   const validatePrice = (text: string) => {
     const regex = /^(?!^0(\.0+)?$)(\d+(\.\d{0,2})?)$/;
     return regex.test(text);
   };
+    const validateStock = (text: string) => {
+    const regex = /^[0-9]+$/;
+    return regex.test(text);
+  };
 
-  // Función para consultar el stock de un producto por nombre
   const fetchStockByProductName = async (name: string) => {
     const q = query(collection(db, "productos"), where("productName", "==", name));
     const querySnapshot = await getDocs(q);
-    const count = querySnapshot.size; // La cantidad de productos con ese nombre
-    setStock(count.toString()); // Actualiza el stock con la cantidad
+    const count = querySnapshot.size; 
+    setStock(count.toString()); 
   };
 
-  // Maneja el cambio del nombre del producto
+  
   const handleProductNameChange = async (text: string) => {
     if (validateName(text)) {
       setProductName(text);
-      await fetchStockByProductName(text); // Consulta el stock cada vez que cambie el nombre
+      await fetchStockByProductName(text);
     } else if (text.trim() === '') {
       setProductName('');
       setStock('');
@@ -149,7 +151,7 @@ export default function Formulario() {
 
   return (
     <View style={styles.container}>
-      {/* Formulario */}
+      
       <View style={styles.row}>
         <TextInput
           style={styles.Alineado}
@@ -166,12 +168,17 @@ export default function Formulario() {
         <TextInput
           style={styles.Alineado}
           placeholder="Stock"
+          keyboardType="numeric"
           value={stock}
-          editable={false} // No se puede editar el campo de stock
+          onChangeText={(text) => {
+            if (validateStock(text)) {
+              setStock(text);
+            }
+          }}
         />
       </View>
 
-      {/* Picker para la categoría */}
+      
       <View style={styles.input}>
         <Picker selectedValue={category} onValueChange={(itemValue) => setCategory(itemValue)} style={{ height: 50 }}>
           <Picker.Item label="Seleccionar Categoría" value="" />
@@ -214,14 +221,14 @@ export default function Formulario() {
         style={styles.input}
         placeholder="Código de Barras"
         value={barcode}
-        editable={false} // El código de barras no es editable
+        editable={false} 
       />
 
       <TouchableOpacity style={styles.scanButton} onPress={() => setIsCameraOpen(true)}>
         <Text style={styles.scanButtonText}>Escanear Código</Text>
       </TouchableOpacity>
 
-      {/* Modal de cámara */}
+      
       <Modal visible={isCameraOpen} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.cameraContainer}>
@@ -244,7 +251,7 @@ export default function Formulario() {
         </View>
       </Modal>
 
-      {/* Modal calendario */}
+      
       <Modal visible={isCalendarVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContainer}>
@@ -260,7 +267,7 @@ export default function Formulario() {
         </View>
       </Modal>
 
-      {/* Botones */}
+      
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Guardar</Text>
@@ -278,7 +285,7 @@ const styles = StyleSheet.create({
     height: 400,
     padding: 10,
     justifyContent: 'center',
-    backgroundColor: '#f8f8f8',//cambiar color
+    backgroundColor: '#f8f8f8',
   },
   row: {
     flexDirection: 'row',
