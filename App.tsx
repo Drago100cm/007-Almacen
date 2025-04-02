@@ -106,7 +106,7 @@ export default function Formulario() {
     if (!productName || !category || !stock || !brand || !purchasePrice || !salePrice || !barcode || !selectedDate) {
       Alert.alert("Error", "Por favor, llena todos los campos.");
     } else {
-      // Guardar los datos en la base de datos de Firebase
+      
       addDoc(collection(db, "productos"), {
         productName,
         category,
