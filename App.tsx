@@ -34,7 +34,7 @@ export default function Formulario() {
     const regex = /^(?!^0(\.0+)?$)(\d+(\.\d{0,2})?)$/;
     return regex.test(text);
   };
-    const validateStock = (text: string) => {
+  const validateStock = (text: string) => {
     const regex = /^[0-9]+$/;
     return regex.test(text);
   };
