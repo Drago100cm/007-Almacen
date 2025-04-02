@@ -4,8 +4,8 @@ import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } f
 import { Button } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Picker } from '@react-native-picker/picker';
-import { db } from './firebaseConfig'; // Asegúrate de que la conexión a Firebase esté correcta
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore"; // Importa estos métodos de Firestore
+import { db } from './firebaseConfig';
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 
 export default function Formulario() {
   const [facing, setFacing] = useState<CameraType>('back');
