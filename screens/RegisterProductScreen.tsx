@@ -14,8 +14,10 @@ import LottieView from 'lottie-react-native';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import BarcodeScanner from '../components/BarcodeScanner';
+import { useNavigation } from '@react-navigation/native';
 
 export default function RegisterProductScreen() {
+  const navigation = useNavigation();
   const [productName, setProductName] = useState('');
   const [brand, setBrand] = useState('');
   const [stock, setStock] = useState('');
@@ -56,7 +58,6 @@ export default function RegisterProductScreen() {
 
   const validateSingleField = (field: string, value: any) => {
     const newErrors = { ...errors };
-
     switch (field) {
       case 'productName':
       case 'brand': {
@@ -86,7 +87,6 @@ export default function RegisterProductScreen() {
         else delete newErrors.salePrice;
         break;
     }
-
     setErrors(newErrors);
   };
 
@@ -137,7 +137,6 @@ export default function RegisterProductScreen() {
 
   const handleSave = async () => {
     const newErrors: { [key: string]: string } = {};
-
     if (!productName.trim()) newErrors.productName = 'Este campo es obligatorio';
     else if (productName.replace(/[^A-Za-zÀ-ÿ]/g, '').length < 4)
       newErrors.productName = 'Debe contener al menos 4 letras';
@@ -194,14 +193,18 @@ export default function RegisterProductScreen() {
       setCompraDate(new Date());
       setErrors({});
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2500);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigation.navigate('Home');
+      }, 2500);
     } catch (error) {
       console.error('Error al guardar en Firebase:', error);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100 }]}>
       <LottieView
         source={require('../assets/Registro.json')}
         autoPlay
@@ -210,31 +213,37 @@ export default function RegisterProductScreen() {
       />
 
       <View style={styles.form}>
-        <Text style={styles.label}>Nombre del producto</Text>
-        <TextInput
-          style={styles.input}
-          value={productName}
-          onChangeText={(text) => {
-            const clean = sanitizeNameOrBrand(text);
-            setProductName(clean);
-            validateSingleField('productName', clean);
-          }}
-        />
-        {errors.productName && <Text style={styles.errorText}>{errors.productName}</Text>}
+        <View style={styles.row}>
+          <View style={styles.flexItem}>
+            <Text style={styles.label}>📦 Nombre</Text>
+            <TextInput
+              style={styles.input}
+              value={productName}
+              onChangeText={(text) => {
+                const clean = sanitizeNameOrBrand(text);
+                setProductName(clean);
+                validateSingleField('productName', clean);
+              }}
+            />
+            {errors.productName && <Text style={styles.errorText}>{errors.productName}</Text>}
+          </View>
 
-        <Text style={styles.label}>Marca</Text>
-        <TextInput
-          style={styles.input}
-          value={brand}
-          onChangeText={(text) => {
-            const clean = sanitizeNameOrBrand(text);
-            setBrand(clean);
-            validateSingleField('brand', clean);
-          }}
-        />
-        {errors.brand && <Text style={styles.errorText}>{errors.brand}</Text>}
+          <View style={styles.flexItem}>
+            <Text style={styles.label}>🏷️ Marca</Text>
+            <TextInput
+              style={styles.input}
+              value={brand}
+              onChangeText={(text) => {
+                const clean = sanitizeNameOrBrand(text);
+                setBrand(clean);
+                validateSingleField('brand', clean);
+              }}
+            />
+            {errors.brand && <Text style={styles.errorText}>{errors.brand}</Text>}
+          </View>
+        </View>
 
-        <Text style={styles.label}>Stock</Text>
+        <Text style={styles.label}>📊 Stock</Text>
         <TextInput
           style={styles.input}
           value={stock}
@@ -247,7 +256,7 @@ export default function RegisterProductScreen() {
         />
         {errors.stock && <Text style={styles.errorText}>{errors.stock}</Text>}
 
-        <Text style={styles.label}>Categoría</Text>
+        <Text style={styles.label}>🗂️ Categoría</Text>
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={category}
@@ -272,81 +281,98 @@ export default function RegisterProductScreen() {
         </View>
         {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
 
-        <Text style={styles.label}>Fecha de compra</Text>
-        <Button title="Seleccionar fecha" onPress={() => setShowCompraDatePicker(true)} />
-        <Text style={{ marginTop: 5 }}>
-          📅 Seleccionada: {compraDate.toLocaleDateString()}
-        </Text>
-        {showCompraDatePicker && (
-          <DateTimePicker
-            value={compraDate}
-            mode="date"
-            display="default"
-            onChange={(_, selectedDate) => {
-              if (selectedDate) setCompraDate(selectedDate);
-              setShowCompraDatePicker(false);
-            }}
-            minimumDate={fechaMinimaCompra}
-            maximumDate={fechaMinima}
-          />
-        )}
+        <View>
+          <View style={styles.row}>
+            <Text style={styles.label}>🕒 Fecha de compra</Text>
+            <Button title="📅" onPress={() => setShowCompraDatePicker(true)} />
+          </View>
+          <Text>📅 {compraDate.toLocaleDateString()}</Text>
+          {showCompraDatePicker && (
+            <DateTimePicker
+              value={compraDate}
+              mode="date"
+              display="default"
+              onChange={(_, selectedDate) => {
+                if (selectedDate) setCompraDate(selectedDate);
+                setShowCompraDatePicker(false);
+              }}
+              minimumDate={fechaMinimaCompra}
+              maximumDate={fechaMinima}
+            />
+          )}
+        </View>
 
-        <Text style={styles.label}>Precio de compra</Text>
-        <TextInput
-          style={styles.input}
-          value={purchasePrice}
-          onChangeText={(text) => {
-            const value = formatDecimalInput(text);
-            setPurchasePrice(value);
-            validateSingleField('purchasePrice', value);
-          }}
-          keyboardType="decimal-pad"
-        />
-        {errors.purchasePrice && <Text style={styles.errorText}>{errors.purchasePrice}</Text>}
+        <View style={styles.row}>
+          <View style={styles.flexItem}>
+            <Text style={styles.label}>💵 Compra</Text>
+            <TextInput
+              style={styles.input}
+              value={purchasePrice}
+              onChangeText={(text) => {
+                const value = formatDecimalInput(text);
+                setPurchasePrice(value);
+                validateSingleField('purchasePrice', value);
+              }}
+              keyboardType="decimal-pad"
+            />
+            {errors.purchasePrice && <Text style={styles.errorText}>{errors.purchasePrice}</Text>}
+          </View>
 
-        <Text style={styles.label}>Precio de venta</Text>
-        <TextInput
-          style={styles.input}
-          value={salePrice}
-          onChangeText={(text) => {
-            const value = formatDecimalInput(text);
-            setSalePrice(value);
-            validateSingleField('salePrice', value);
-          }}
-          keyboardType="decimal-pad"
-        />
-        {errors.salePrice && <Text style={styles.errorText}>{errors.salePrice}</Text>}
+          <View style={styles.flexItem}>
+            <Text style={styles.label}>💵 Venta</Text>
+            <TextInput
+              style={styles.input}
+              value={salePrice}
+              onChangeText={(text) => {
+                const value = formatDecimalInput(text);
+                setSalePrice(value);
+                validateSingleField('salePrice', value);
+              }}
+              keyboardType="decimal-pad"
+            />
+            {errors.salePrice && <Text style={styles.errorText}>{errors.salePrice}</Text>}
+          </View>
+        </View>
 
-        <Text style={styles.label}>Fecha de caducidad</Text>
-        <Button title="Seleccionar fecha" onPress={() => setShowDatePicker(true)} />
-        <Text style={{ marginTop: 5 }}>
-          📅 Seleccionada: {expirationDate.toLocaleDateString()}
-        </Text>
-        {showDatePicker && (
-          <DateTimePicker
-            value={expirationDate}
-            mode="date"
-            display="default"
-            onChange={(_, selectedDate) => {
-              if (selectedDate) {
-                setExpirationDate(selectedDate);
-              }
-              setShowDatePicker(false);
-            }}
-            minimumDate={fechaMinima}
-          />
-        )}
-        {errors.expirationDate && <Text style={styles.errorText}>{errors.expirationDate}</Text>}
+        <View>
+          <View style={styles.row}>
+            <Text style={styles.label}>🕒 Fecha caducidad</Text>
+            <Button title="📅" onPress={() => setShowDatePicker(true)} />
+          </View>
+          <Text>📅 {expirationDate.toLocaleDateString()}</Text>
+          {showDatePicker && (
+            <DateTimePicker
+              value={expirationDate}
+              mode="date"
+              display="default"
+              onChange={(_, selectedDate) => {
+                if (selectedDate) setExpirationDate(selectedDate);
+                setShowDatePicker(false);
+              }}
+              minimumDate={fechaMinima}
+            />
+          )}
+          {errors.expirationDate && <Text style={styles.errorText}>{errors.expirationDate}</Text>}
+        </View>
 
-        <Text style={styles.label}>Código de barras</Text>
-        <TextInput style={styles.input} value={barcode} editable={false} />
+        <Text style={styles.label}>📇 Código de barras</Text>
+        <View style={styles.row}>
+          <TextInput style={[styles.input, { flex: 1 }]} value={barcode} editable={false} />
+          <Button title="📷" onPress={() => setScannerVisible(true)} />
+        </View>
         {errors.barcode && <Text style={styles.errorText}>{errors.barcode}</Text>}
         {barcodeErrorMessage !== '' && (
           <Text style={styles.alertRed}>{barcodeErrorMessage}</Text>
         )}
 
-        <Button title="Escanear Código de Barras" onPress={() => setScannerVisible(true)} />
-        <Button title="Guardar Producto" onPress={handleSave} color={formValid ? '#28a745' : '#aaa'} disabled={!formValid} />
+        <View style={{ marginTop: 10 }}>
+          <Button
+            title="💾 Guardar Producto"
+            onPress={handleSave}
+            color={formValid ? '#28a745' : '#aaa'}
+            disabled={!formValid}
+          />
+        </View>
       </View>
 
       <Modal visible={showSuccess} transparent animationType="fade">
@@ -408,5 +434,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  flexItem: {
+    flex: 1,
   },
 });
