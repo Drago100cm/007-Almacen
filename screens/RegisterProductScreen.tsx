@@ -204,7 +204,7 @@ export default function RegisterProductScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.scrollContainer, { paddingBottom: 100 }]}>
+    <View style={styles.container}>
       <LottieView
         source={require('../assets/Registro.json')}
         autoPlay
@@ -391,46 +391,69 @@ export default function RegisterProductScreen() {
         onClose={() => setScannerVisible(false)}
         onScan={handleBarcodeScanned}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: { padding: 20, backgroundColor: '#fff' },
-  lottie: { width: 200, height: 200, alignSelf: 'center', marginBottom: 10 },
-  form: { gap: 15 },
-  label: { fontWeight: 'bold', marginBottom: 5 },
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  lottie: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
+  },
+  form: {
+    width: '100%',
+    maxWidth: 320, // ancho máximo para mantenerlo compacto
+    gap: 10,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 3,
+    fontSize: 12,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#aaa',
     borderRadius: 5,
-    padding: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     backgroundColor: '#f9f9f9',
+    fontSize: 13,
   },
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#aaa',
     borderRadius: 5,
-    overflow: 'hidden',
     backgroundColor: '#f9f9f9',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   errorText: {
     color: 'red',
-    fontSize: 12,
-    marginTop: -10,
-    marginBottom: 10,
+    fontSize: 11,
+    marginTop: -4,
+    marginBottom: 6,
   },
   alertRed: {
     backgroundColor: '#ff4d4d',
     color: '#fff',
-    padding: 10,
+    padding: 6,
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 8,
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 12,
   },
   successOverlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -439,7 +462,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 6,
   },
   flexItem: {
     flex: 1,
