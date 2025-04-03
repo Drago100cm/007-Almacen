@@ -39,13 +39,21 @@ export default function RegisterProductScreen() {
   const fechaMinimaCompra = new Date();
   fechaMinimaCompra.setDate(fechaMinimaCompra.getDate() - 7);
 
-  const sanitizeNameOrBrand = (text: string) => {
-    const letrasValidas = text.replace(/[^A-Za-zÀ-ÿ\s]/g, '');
-    const espacios = (letrasValidas.match(/ /g) || []).length;
-    const palabras = letrasValidas.split(/\s+/);
-    if (espacios > 5) return palabras.slice(0, 6).join(' ');
-    return letrasValidas;
+  const sanitizeNameOrBrand = (text: string, field: 'productName' | 'brand') => {
+    if (field === 'productName') {
+      // Letras, números, espacios y guiones medios
+      const limpio = text.replace(/[^A-Za-zÀ-ÿ0-9\s-]/g, '');
+      const palabras = limpio.trim().split(/\s+/).slice(0, 6); // máximo 6 palabras
+      return palabras.join(' ');
+    } else {
+      // Solo letras, espacios y guiones medios
+      const limpio = text.replace(/[^A-Za-zÀ-ÿ\s-]/g, '');
+      const palabras = limpio.trim().split(/\s+/).slice(0, 6);
+      return palabras.join(' ');
+    }
   };
+
+
 
   const formatDecimalInput = (text: string) => {
     let cleaned = text.replace(/[^0-9.]/g, '');
@@ -220,7 +228,7 @@ export default function RegisterProductScreen() {
               style={styles.input}
               value={productName}
               onChangeText={(text) => {
-                const clean = sanitizeNameOrBrand(text);
+                const clean = sanitizeNameOrBrand(text, 'productName'); // o 'brand'
                 setProductName(clean);
                 validateSingleField('productName', clean);
               }}
@@ -234,7 +242,7 @@ export default function RegisterProductScreen() {
               style={styles.input}
               value={brand}
               onChangeText={(text) => {
-                const clean = sanitizeNameOrBrand(text);
+                const clean = sanitizeNameOrBrand(text, 'brand'); // o 'brand'
                 setBrand(clean);
                 validateSingleField('brand', clean);
               }}
@@ -259,6 +267,7 @@ export default function RegisterProductScreen() {
         <Text style={styles.label}>🗂️ Categoría</Text>
         <View style={styles.pickerContainer}>
           <Picker
+            style={{ fontSize: 11, height: 28 }}
             selectedValue={category}
             onValueChange={(value) => {
               setCategory(value);
@@ -407,6 +416,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     marginBottom: 10,
+    marginTop: -150
   },
   form: {
     width: '100%',
@@ -428,12 +438,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#aaa',
-    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: '#ccc',
+    borderRadius: 3,
     backgroundColor: '#f9f9f9',
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
   errorText: {
     color: 'red',
