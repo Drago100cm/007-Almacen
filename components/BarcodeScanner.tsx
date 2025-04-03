@@ -27,7 +27,7 @@ export default function BarcodeScanner({ visible, onClose, onScan }: Props) {
   };
 
   const handleClose = () => {
-    setScannedCodes([]); // Resetear escaneos para la próxima vez
+    setScannedCodes([]); 
     onClose();
   };
 

@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View,Text,TextInput,Button,ScrollView,StyleSheet,Modal, } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Modal,
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import LottieView from 'lottie-react-native';
@@ -14,7 +22,9 @@ export default function RegisterProductScreen() {
   const [category, setCategory] = useState('');
   const [purchasePrice, setPurchasePrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
-  const [expirationDate, setExpirationDate] = useState<Date>(new Date());
+  const [expirationDate, setExpirationDate] = useState(new Date());
+  const [compraDate, setCompraDate] = useState(new Date());
+  const [showCompraDatePicker, setShowCompraDatePicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [barcode, setBarcode] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -24,7 +34,8 @@ export default function RegisterProductScreen() {
   const [barcodeErrorMessage, setBarcodeErrorMessage] = useState('');
 
   const fechaMinima = new Date();
-  fechaMinima.setMonth(fechaMinima.getMonth() + 2);
+  const fechaMinimaCompra = new Date();
+  fechaMinimaCompra.setDate(fechaMinimaCompra.getDate() - 7);
 
   const sanitizeNameOrBrand = (text: string) => {
     const letrasValidas = text.replace(/[^A-Za-zÀ-ÿ\s]/g, '');
@@ -35,10 +46,11 @@ export default function RegisterProductScreen() {
   };
 
   const formatDecimalInput = (text: string) => {
-    const cleaned = text.replace(/[^0-9.]/g, '');
+    let cleaned = text.replace(/[^0-9.]/g, '');
+    if (cleaned.startsWith('.')) cleaned = cleaned.slice(1);
     const parts = cleaned.split('.');
-    if (parts.length > 2) return parts[0] + '.' + parts[1];
-    if (parts[1]?.length > 2) return parts[0] + '.' + parts[1].slice(0, 2);
+    if (parts.length > 2) cleaned = parts[0] + '.' + parts[1];
+    if (parts[1]?.length > 2) cleaned = parts[0] + '.' + parts[1].slice(0, 2);
     return cleaned;
   };
 
@@ -110,7 +122,6 @@ export default function RegisterProductScreen() {
 
     if (!querySnapshot.empty) {
       setErrors((prev) => ({ ...prev, barcode: 'Este código ya existe' }));
-
       return;
     }
 
@@ -127,41 +138,27 @@ export default function RegisterProductScreen() {
   const handleSave = async () => {
     const newErrors: { [key: string]: string } = {};
 
-    const soloLetrasProducto = productName.replace(/[^A-Za-zÀ-ÿ]/g, '');
-    const soloLetrasMarca = brand.replace(/[^A-Za-zÀ-ÿ]/g, '');
-
-    if (!productName.trim())
-      newErrors.productName = 'Este campo es obligatorio';
-    else if (soloLetrasProducto.length < 4)
+    if (!productName.trim()) newErrors.productName = 'Este campo es obligatorio';
+    else if (productName.replace(/[^A-Za-zÀ-ÿ]/g, '').length < 4)
       newErrors.productName = 'Debe contener al menos 4 letras';
 
-    if (!brand.trim())
-      newErrors.brand = 'Este campo es obligatorio';
-    else if (soloLetrasMarca.length < 4)
+    if (!brand.trim()) newErrors.brand = 'Este campo es obligatorio';
+    else if (brand.replace(/[^A-Za-zÀ-ÿ]/g, '').length < 4)
       newErrors.brand = 'Debe contener al menos 4 letras';
 
     if (!stock || isNaN(Number(stock)) || Number(stock) <= 0)
       newErrors.stock = 'Stock inválido';
 
-    if (!category.trim())
-      newErrors.category = 'Selecciona una categoría';
-
-    if (!purchasePrice)
-      newErrors.purchasePrice = 'Precio de compra inválido';
-
-    if (!salePrice)
-      newErrors.salePrice = 'Precio de venta inválido';
-
+    if (!category.trim()) newErrors.category = 'Selecciona una categoría';
+    if (!purchasePrice) newErrors.purchasePrice = 'Precio de compra inválido';
+    if (!salePrice) newErrors.salePrice = 'Precio de venta inválido';
     if (expirationDate < fechaMinima)
       newErrors.expirationDate = 'Selecciona una fecha más lejana';
-
-    if (!barcode)
-      newErrors.barcode = 'Escanea un código de barras';
+    if (!barcode) newErrors.barcode = 'Escanea un código de barras';
 
     const productosRef = collection(db, 'productos');
     const q = query(productosRef, where('barcode', '==', barcode));
     const querySnapshot = await getDocs(q);
-
     if (!querySnapshot.empty) {
       newErrors.barcode = 'Este código de barras ya está registrado';
     }
@@ -177,13 +174,14 @@ export default function RegisterProductScreen() {
         brand,
         stock: parseInt(stock),
         category,
+        compraDate: compraDate.toISOString(),
         purchasePrice: parseFloat(purchasePrice),
         salePrice: parseFloat(salePrice),
         expirationDate: expirationDate.toISOString(),
         barcode,
       };
 
-      await addDoc(productosRef, doc);
+      await addDoc(collection(db, 'productos'), doc);
 
       setProductName('');
       setBrand('');
@@ -193,6 +191,7 @@ export default function RegisterProductScreen() {
       setSalePrice('');
       setBarcode('');
       setExpirationDate(new Date());
+      setCompraDate(new Date());
       setErrors({});
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2500);
@@ -273,6 +272,25 @@ export default function RegisterProductScreen() {
         </View>
         {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
 
+        <Text style={styles.label}>Fecha de compra</Text>
+        <Button title="Seleccionar fecha" onPress={() => setShowCompraDatePicker(true)} />
+        <Text style={{ marginTop: 5 }}>
+          📅 Seleccionada: {compraDate.toLocaleDateString()}
+        </Text>
+        {showCompraDatePicker && (
+          <DateTimePicker
+            value={compraDate}
+            mode="date"
+            display="default"
+            onChange={(_, selectedDate) => {
+              if (selectedDate) setCompraDate(selectedDate);
+              setShowCompraDatePicker(false);
+            }}
+            minimumDate={fechaMinimaCompra}
+            maximumDate={fechaMinima}
+          />
+        )}
+
         <Text style={styles.label}>Precio de compra</Text>
         <TextInput
           style={styles.input}
@@ -328,12 +346,7 @@ export default function RegisterProductScreen() {
         )}
 
         <Button title="Escanear Código de Barras" onPress={() => setScannerVisible(true)} />
-        <Button
-          title="Guardar Producto"
-          onPress={handleSave}
-          color={formValid ? '#28a745' : '#aaa'}
-          disabled={!formValid}
-        />
+        <Button title="Guardar Producto" onPress={handleSave} color={formValid ? '#28a745' : '#aaa'} disabled={!formValid} />
       </View>
 
       <Modal visible={showSuccess} transparent animationType="fade">

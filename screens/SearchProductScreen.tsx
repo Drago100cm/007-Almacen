@@ -47,7 +47,7 @@ export default function SearchProductScreen() {
 
     const matches = productos.filter(p =>
       p.productName?.toLowerCase().includes(cleanTerm) ||
-      p.barcode?.startsWith(cleanTerm)
+      p.barcode?.endsWith(cleanTerm)
     );
 
     if (matches.length > 0) {
@@ -93,7 +93,7 @@ export default function SearchProductScreen() {
             setNotFound(false);
             setResults([]);
           }}
-          placeholder="Ej. 7501 o 'pan'"
+          placeholder="Ej. 9267 o 'pan'"
           style={styles.input}
         />
         <TouchableOpacity

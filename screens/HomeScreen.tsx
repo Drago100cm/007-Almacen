@@ -34,13 +34,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Encabezado */}
       <View style={styles.headerContainer}>
         <Text style={styles.header}>👋 Bienvenido</Text>
-        <Text style={styles.subheader}>Gestión de Inventario Moderna</Text>
+        <Text style={styles.subheader}>Gestión de Inventario</Text>
       </View>
 
-      {/* Animación + datos */}
       <View style={styles.lottieBox}>
         <LottieView
           source={require('../assets/animation.json')}
@@ -48,11 +46,9 @@ export default function HomeScreen() {
           loop
           style={{ width: 220, height: 220 }}
         />
-        <Text style={styles.infoText}>📦 Productos registrados: {productCount}</Text>
-        <Text style={styles.infoText}>📁 Categorías únicas: {categoryCount}</Text>
+
       </View>
 
-      {/* Tarjetas informativas */}
       <View style={styles.cardContainer}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Productos</Text>
@@ -98,16 +94,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f6fc',
-    justifyContent: 'space-between', // Distribuye el header y navbar con espacio entre ellos
+    justifyContent: 'space-between', 
   },
   headerContainer: {
-    paddingTop: 40, // Espacio para evitar la barra de estado
+    paddingTop: 40, 
     paddingHorizontal: 24,
   },
   header: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#2c3e50', // Título principal oscuro
+    color: '#2c3e50', 
   },
   subheader: {
     fontSize: 16,
@@ -131,15 +127,15 @@ const styles = StyleSheet.create({
     gap: 15,
     paddingHorizontal: 20,
     marginBottom: 10,
-    justifyContent: 'space-between', // Distribuye las tarjetas uniformemente
+    justifyContent: 'space-between', 
   },
   card: {
     flex: 1,
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 14,
-    elevation: 4, // Sombra en Android
-    shadowColor: '#000', // Sombra en iOS
+    elevation: 4,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 5,
@@ -158,7 +154,7 @@ const styles = StyleSheet.create({
   },
   navbar: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Espaciado entre íconos de navegación
+    justifyContent: 'space-around', 
     paddingVertical: 12,
     backgroundColor: '#ffffff',
     borderTopWidth: 1,

@@ -217,7 +217,6 @@ export default function InventoryScreen() {
               keyboardType="numeric"
               value={cantidad}
               onChangeText={(text) => {
-                // Solo acepta números enteros positivos
                 const filtered = text.replace(/[^0-9]/g, '');
                 setCantidad(filtered);
               }}
