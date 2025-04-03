@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  FlatList,
 } from 'react-native';
-import { CameraView, CameraType, BarcodeScanningResult } from 'expo-camera';
+import { CameraView, BarcodeScanningResult } from 'expo-camera';
 
 interface Props {
   visible: boolean;
@@ -16,15 +17,18 @@ interface Props {
 }
 
 export default function BarcodeScanner({ visible, onClose, onScan }: Props) {
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [scanned, setScanned] = useState(false);
+  const [scannedCodes, setScannedCodes] = useState<string[]>([]);
 
   const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
-    if (!scanned) {
-      setScanned(true);
+    if (!scannedCodes.includes(data)) {
+      setScannedCodes((prev) => [...prev, data]);
       onScan(data);
-      onClose();
     }
+  };
+
+  const handleClose = () => {
+    setScannedCodes([]); // Resetear escaneos para la próxima vez
+    onClose();
   };
 
   return (
@@ -33,30 +37,33 @@ export default function BarcodeScanner({ visible, onClose, onScan }: Props) {
         <View style={styles.cameraContainer}>
           <CameraView
             style={styles.camera}
-            facing={facing}
+            facing="back"
             barcodeScannerSettings={{ barcodeTypes: ['qr', 'ean13', 'code128'] }}
-            onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+            onBarcodeScanned={handleBarCodeScanned}
           >
-            {/* Overlay oscuro con ventana */}
             <View style={styles.overlay}>
               <View style={styles.transparentWindow} />
             </View>
 
-            {/* Botones sobre la cámara */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  setFacing((current) => (current === 'back' ? 'front' : 'back'))
-                }
-              >
-                <Text style={styles.text}>Cambiar Cámara</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
                 <Text style={styles.text}>Cerrar</Text>
               </TouchableOpacity>
             </View>
           </CameraView>
+
+          {scannedCodes.length > 0 && (
+            <View style={styles.codeList}>
+              <Text style={styles.codeListTitle}>Escaneados:</Text>
+              <FlatList
+                data={scannedCodes}
+                keyExtractor={(item, index) => item + index}
+                renderItem={({ item }) => (
+                  <Text style={styles.codeItem}>• {item}</Text>
+                )}
+              />
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -101,13 +108,8 @@ const styles = StyleSheet.create({
     bottom: 30,
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     zIndex: 2,
-  },
-  button: {
-    backgroundColor: '#00000080',
-    padding: 10,
-    borderRadius: 10,
   },
   closeButton: {
     backgroundColor: '#c00',
@@ -116,5 +118,24 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
+  },
+  codeList: {
+    position: 'absolute',
+    bottom: 90,
+    left: 10,
+    right: 10,
+    backgroundColor: '#00000099',
+    padding: 10,
+    borderRadius: 10,
+    maxHeight: 150,
+  },
+  codeListTitle: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  codeItem: {
+    color: '#fff',
+    fontSize: 12,
   },
 });
