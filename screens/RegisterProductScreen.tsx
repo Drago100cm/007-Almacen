@@ -41,17 +41,23 @@ export default function RegisterProductScreen() {
 
   const sanitizeNameOrBrand = (text: string, field: 'productName' | 'brand') => {
     if (field === 'productName') {
-      // Letras, números, espacios y guiones medios
-      const limpio = text.replace(/[^A-Za-zÀ-ÿ0-9\s-]/g, '');
-      const palabras = limpio.trim().split(/\s+/).slice(0, 6); // máximo 6 palabras
-      return palabras.join(' ');
+      // Permitir letras, números, espacios, guiones y puntos
+      const limpio = text.replace(/[^A-Za-zÀ-ÿ0-9\s\.\-]/g, ''); // Permitir letras, números, espacios, guiones y puntos
+      const palabras = limpio.split(/\s+/).slice(0, 6); // máximo 6 palabras, permitiendo los espacios
+      return palabras.join(' '); // Unir las palabras con un solo espacio
     } else {
-      // Solo letras, espacios y guiones medios
-      const limpio = text.replace(/[^A-Za-zÀ-ÿ\s-]/g, '');
-      const palabras = limpio.trim().split(/\s+/).slice(0, 6);
-      return palabras.join(' ');
+      // Permitir letras, números, espacios, guiones y puntos para la marca
+      const limpio = text.replace(/[^A-Za-zÀ-ÿ0-9\s\.\-]/g, ''); // Permitir letras, números, espacios, guiones y puntos
+      const palabras = limpio.split(/\s+/).slice(0, 6); // máximo 6 palabras, permitiendo los espacios
+      return palabras.join(' '); // Unir las palabras con un solo espacio
     }
   };
+
+
+
+
+
+
 
 
 
@@ -69,11 +75,15 @@ export default function RegisterProductScreen() {
     switch (field) {
       case 'productName':
       case 'brand': {
-        const soloLetras = value.replace(/[^A-Za-zÀ-ÿ]/g, '');
-        if (!value.trim()) newErrors[field] = 'Este campo es obligatorio';
-        else if (soloLetras.length < 4)
-          newErrors[field] = 'Debe contener al menos 4 letras';
-        else delete newErrors[field];
+        // Acepta letras, números, espacios y guiones para nombre o marca
+        const cleanedValue = value.replace(/[^A-Za-zÀ-ÿ0-9\ s-]/g, '');
+        if (!value.trim()) {
+          newErrors[field] = 'Este campo es obligatorio';
+        } else if (cleanedValue.length < 4) {
+          newErrors[field] = 'Debe contener al menos 4 caracteres';
+        } else {
+          delete newErrors[field];
+        }
         break;
       }
       case 'stock':
@@ -97,6 +107,7 @@ export default function RegisterProductScreen() {
     }
     setErrors(newErrors);
   };
+
 
   useEffect(() => {
     const valid =
@@ -146,12 +157,11 @@ export default function RegisterProductScreen() {
   const handleSave = async () => {
     const newErrors: { [key: string]: string } = {};
     if (!productName.trim()) newErrors.productName = 'Este campo es obligatorio';
-    else if (productName.replace(/[^A-Za-zÀ-ÿ]/g, '').length < 4)
-      newErrors.productName = 'Debe contener al menos 4 letras';
+    else if (productName.replace(/[^A-Za-zÀ-ÿ\ s]/g, ' ').length < 4)  // Acepta letras y espacios
 
-    if (!brand.trim()) newErrors.brand = 'Este campo es obligatorio';
-    else if (brand.replace(/[^A-Za-zÀ-ÿ]/g, '').length < 4)
-      newErrors.brand = 'Debe contener al menos 4 letras';
+      if (!brand.trim()) newErrors.brand = 'Este campo es obligatorio';
+      else if (brand.replace(/[^A-Za-zÀ-ÿ\ s]/g, '').length < 4)  // Acepta letras y espacios
+        newErrors.brand = 'Debe contener al menos 4 letras';
 
     if (!stock || isNaN(Number(stock)) || Number(stock) <= 0)
       newErrors.stock = 'Stock inválido';
@@ -225,15 +235,15 @@ export default function RegisterProductScreen() {
           <View style={styles.flexItem}>
             <Text style={styles.label}>📦 Nombre</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, errors.productName ? styles.inputError : null]} // Aplica borde rojo solo si hay error
               value={productName}
               onChangeText={(text) => {
-                const clean = sanitizeNameOrBrand(text, 'productName'); // o 'brand'
-                setProductName(clean);
-                validateSingleField('productName', clean);
+                const clean = sanitizeNameOrBrand(text, 'productName'); // Sanitiza el texto
+                setProductName(clean); // Actualiza el estado
+                validateSingleField('productName', clean); // Valida el campo
               }}
             />
-            {errors.productName && <Text style={styles.errorText}>{errors.productName}</Text>}
+           
           </View>
 
           <View style={styles.flexItem}>
@@ -244,7 +254,6 @@ export default function RegisterProductScreen() {
               onChangeText={(text) => {
                 const clean = sanitizeNameOrBrand(text, 'brand'); // o 'brand'
                 setBrand(clean);
-                validateSingleField('brand', clean);
               }}
             />
             {errors.brand && <Text style={styles.errorText}>{errors.brand}</Text>}
@@ -264,10 +273,10 @@ export default function RegisterProductScreen() {
         />
         {errors.stock && <Text style={styles.errorText}>{errors.stock}</Text>}
 
-        <Text style={styles.label}>🗂️ Categoría</Text>
+        <Text style={styles.label}>🗂️ Categoría </Text>
         <View style={styles.pickerContainer}>
           <Picker
-            style={{ fontSize: 11, height: 28 }}
+            style={{ fontSize: 11, height: 49 }}
             selectedValue={category}
             onValueChange={(value) => {
               setCategory(value);
@@ -448,8 +457,8 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 11,
-    marginTop: -4,
-    marginBottom: 6,
+    marginTop: 5, // Espacio entre el campo y el mensaje de error
+    marginBottom: 10, // Margen inferior para mayor separación
   },
   alertRed: {
     backgroundColor: '#ff4d4d',
@@ -476,5 +485,11 @@ const styles = StyleSheet.create({
   },
   flexItem: {
     flex: 1,
+  },
+  inputContainer: {
+    marginBottom: 20, // Asegura que haya espacio para el error debajo del campo
+  },
+  inputError: {
+    borderColor: 'red', // Estilo para el borde del input cuando hay error
   },
 });
