@@ -235,15 +235,17 @@ export default function RegisterProductScreen() {
           <View style={styles.flexItem}>
             <Text style={styles.label}>📦 Nombre</Text>
             <TextInput
-              style={[styles.input, errors.productName ? styles.inputError : null]} // Aplica borde rojo solo si hay error
+               style={[styles.input, errors.productName ? styles.inputError : null]} // Estilo para cuando hay error
               value={productName}
               onChangeText={(text) => {
-                const clean = sanitizeNameOrBrand(text, 'productName'); // Sanitiza el texto
-                setProductName(clean); // Actualiza el estado
-                validateSingleField('productName', clean); // Valida el campo
+                const clean = sanitizeNameOrBrand(text, 'productName');
+                setProductName(clean);
+                validateSingleField('productName', clean);
               }}
+              placeholder={errors.productName ? errors.productName : 'Nombre del producto'} // Placeholder con el mensaje de error
+              placeholderTextColor={errors.productName ? 'red' : '#aaa'} // Cambiar el color del placeholder en caso de error
             />
-           
+
           </View>
 
           <View style={styles.flexItem}>
@@ -255,8 +257,9 @@ export default function RegisterProductScreen() {
                 const clean = sanitizeNameOrBrand(text, 'brand'); // o 'brand'
                 setBrand(clean);
               }}
+              placeholder={errors.productName ? errors.productName : 'Nombre del producto'} // Placeholder con el mensaje de error
+              placeholderTextColor={errors.productName ? 'red' : '#aaa'}
             />
-            {errors.brand && <Text style={styles.errorText}>{errors.brand}</Text>}
           </View>
         </View>
 
